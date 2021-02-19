@@ -193,14 +193,16 @@ int getOptArg(int argc, char* argv[], char* str, char* arg) {
     for (int i = 1; i < argc; i++ ) {
         if (!strcmp(argv[i], str)) {
             if( i + 1 == argc) {
-                printf("%s not find\n", str);
+                printf("Opt: %s is null.\n", (str+2));
+                printf("Eg. %s %s [value]\n", argv[0], str);
                 return 1;
             }
             strncpy(arg, argv[i+1], strlen(argv[i+1]));
             return 0;
         }
     }
-    printf("%s not find\n", str);
+    printf("Opt: %s is null.\n", (str+2));
+    printf("Eg. %s %s [value]\n", argv[0], str);
     return 1;
 }
 
