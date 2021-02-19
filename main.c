@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #define GAMMA_STEP                      256
 #define GAMMA_STEP_HALF                 (GAMMA_STEP/2)
@@ -21,6 +22,7 @@ FILE *fopen_file(char* file_name) {
     fp = fopen(file_name,"r");
     if (fp == NULL) {
         printf("%s, open file %s error.\n", __FUNCTION__, file_name);
+        perror("Error:");
     }
     return fp;
 }
@@ -176,13 +178,65 @@ int usage(int argc, char* argv[]) {
     return 0;
 }
 
+int printfOpt(int argc, char* argv[]) {
+    int opt_num = 0;
+    for (int i = 1; i < argc; i++ ) {
+        if (argv[i][0] == '-' && argv[i][0] != '\0') {
+            opt_num++;
+            printf("opt:%s idx:%d\n", argv[i], i);
+        }
+    }
+    printf("opt_num:%d\n", opt_num);
+}
+
+int getOptArg(int argc, char* argv[], char* str, char* arg) {
+    for (int i = 1; i < argc; i++ ) {
+        if (!strcmp(argv[i], str)) {
+            if( i + 1 == argc) {
+                printf("%s not find\n", str);
+                return 1;
+            }
+            strncpy(arg, argv[i+1], strlen(argv[i+1]));
+            return 0;
+        }
+    }
+    printf("%s not find\n", str);
+    return 1;
+}
+
+int setOpt(char* opt1, ...)
+{
+    /*定义保存函数参数的结构*/
+    va_list argp;
+    int argno = 0;
+    char* para;
+    /*argp指向传入的第一个可选参数，msg是最后一个确定的参数*/
+    va_start(argp, opt1);
+    while (1)
+    {
+        para = va_arg(argp, char *);
+        if (strcmp(para, "") == 0)
+            break;
+        printf("Parameter #%d is: %s\n", argno, para);
+        argno++;
+    }
+    va_end(argp);
+}
+
 int main(int argc, char* argv[]){
 
     if (usage(argc, argv)) {
         return 1;
     }
+    char baseopt[10] = {'\0'};
+    if (getOptArg(argc,argv, "--base", baseopt)) {
+        return 1;
+    }
+    int base = atoi(baseopt);
 
-    printf("Start GAMMA\n");
+    printf("Start GAMMA --base=%d\n", base);
+
+    //setOpt("ad","cd");
 
     char output_file[30] = {'\0'};
     getOutputFilename(argv[1], '.', output_file);
@@ -201,7 +255,7 @@ int main(int argc, char* argv[]){
     //show_data_dec(data_buf, 4, line);
     
     //get r g b data from csv data_buf
-    get_gamma_data(data_gamma, data_buf, 2);
+    get_gamma_data(data_gamma, data_buf, base);
 
     split_gamma_to_oebuf(data_oe_gamma, data_gamma);
 
